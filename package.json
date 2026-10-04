@@ -1,0 +1,29 @@
+{
+  "name": "ttgant",
+  "version": "1.0.0",
+  "main": "server/index.js",
+  "scripts": {
+    "server": "node server/index.js",
+    "client": "npm --prefix client run dev",
+    "kill-ports": "powershell -Command \"$pids = (netstat -ano | Select-String ':3000|:3001|:5000') | ForEach-Object { ($_ -split '\\s+')[-1] } | Sort-Object -Unique; foreach ($p in $pids) { try { Stop-Process -Id $p -Force -ErrorAction SilentlyContinue } catch {} }; Start-Sleep -Seconds 1\"",
+    "dev": "npm run kill-ports && concurrently -n \"API,WEB\" -c \"cyan,magenta\" \"npm run server\" \"npm run client\"",
+    "build": "npm --prefix client run build",
+    "import": "node scripts/import_excel.js",
+    "generate-sample": "node scripts/generate_sample_excel.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "concurrently": "^10.0.5",
+    "cors": "^2.8.6",
+    "dotenv": "^18.0.5",
+    "express": "^5.2.1",
+    "multer": "^2.4.0",
+    "node-cron": "^4.6.0",
+    "node-notifier": "^10.0.1",
+    "puppeteer-core": "^25.12.0",
+    "xlsx": "^0.18.5"
+  }
+}

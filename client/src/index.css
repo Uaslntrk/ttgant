@@ -1,0 +1,243 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+:root {
+  --bg-main: #0a0e17;
+  --bg-surface: #111827;
+  --bg-surface-elevated: #1e293b;
+  --bg-surface-hover: #1f293d;
+  --border-color: #1f293d;
+  --border-focus: #0284c7;
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+  --text-dim: #64748b;
+  --primary: #0284c7;
+  --primary-hover: #0369a1;
+  --success: #16a34a;
+  --warning: #d97706;
+  --danger: #dc2626;
+  --cyan: #0284c7;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  border-radius: 0 !important;
+  animation: none !important;
+  transition: none !important;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: var(--bg-main);
+  color: var(--text-main);
+  min-height: 100vh;
+  line-height: 1.4;
+  overflow-x: hidden;
+}
+
+/* Solid Clean Enterprise Panels (No blur, no rounded corners) */
+.glass-panel,
+.panel {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: 0 !important;
+}
+
+.glass-panel-elevated,
+.panel-elevated {
+  background: var(--bg-surface-elevated);
+  border: 1px solid #334155;
+  border-radius: 0 !important;
+}
+
+/* Custom Scrollbars - Compact & Flat */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #0b0f19;
+}
+::-webkit-scrollbar-thumb {
+  background: #334155;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+}
+
+/* Leaflet Map overrides for flat corporate theme */
+.leaflet-container {
+  width: 100%;
+  height: 100%;
+  border-radius: 0 !important;
+  background: #0f172a !important;
+  font-family: 'Inter', sans-serif !important;
+}
+
+.leaflet-popup-content-wrapper {
+  background: #111827 !important;
+  color: #f8fafc !important;
+  border-radius: 0 !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.6) !important;
+  border: 1px solid #334155 !important;
+  padding: 0 !important;
+}
+
+.leaflet-popup-content {
+  margin: 10px !important;
+  line-height: 1.4 !important;
+}
+
+.leaflet-popup-tip {
+  background: #111827 !important;
+}
+
+/* Buttons - Flat & Compact */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 12px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  border-radius: 0 !important;
+  cursor: pointer;
+  border: 1px solid transparent;
+  outline: none;
+}
+
+.btn-primary {
+  background: #0284c7;
+  color: white;
+  border-color: #0284c7;
+}
+.btn-primary:hover {
+  background: #0369a1;
+}
+
+.btn-secondary {
+  background: #1e293b;
+  color: var(--text-main);
+  border-color: #334155;
+}
+.btn-secondary:hover {
+  background: #334155;
+}
+
+.btn-danger {
+  background: #dc2626;
+  color: white;
+  border-color: #dc2626;
+}
+.btn-danger:hover {
+  background: #b91c1c;
+}
+
+.btn-success {
+  background: #16a34a;
+  color: white;
+  border-color: #16a34a;
+}
+
+.btn-outline {
+  background: transparent;
+  border: 1px solid #334155;
+  color: var(--text-main);
+}
+.btn-outline:hover {
+  background: #1e293b;
+  border-color: #64748b;
+}
+
+/* Form inputs - Flat & Compact */
+.form-input {
+  width: 100%;
+  padding: 6px 10px;
+  background: #0b0f19;
+  border: 1px solid #334155;
+  border-radius: 0 !important;
+  color: #f8fafc;
+  font-size: 0.8125rem;
+  outline: none;
+}
+
+.form-input:focus {
+  border-color: var(--border-focus);
+}
+
+/* Modals - Flat & Solid */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 12px;
+}
+
+.modal-content {
+  background: #111827;
+  border: 1px solid #334155;
+  border-radius: 0 !important;
+  width: 100%;
+  max-width: 520px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.8);
+  overflow: hidden;
+}
+
+/* Gantt Chart Custom Layout - Sharp & High Density */
+.gantt-container {
+  overflow-x: auto;
+  border-radius: 0 !important;
+  background: #0b0f19;
+  border: 1px solid var(--border-color);
+}
+
+.gantt-grid {
+  display: grid;
+  min-width: 900px;
+}
+
+.gantt-header-cell {
+  padding: 6px 2px;
+  text-align: center;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #94a3b8;
+  border-right: 1px solid #1f293d;
+  border-bottom: 1px solid #334155;
+  background: #111827;
+}
+
+.gantt-row {
+  display: grid;
+  height: 42px;
+  border-bottom: 1px solid #1f293d;
+  position: relative;
+  align-items: center;
+}
+
+.gantt-row:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.gantt-bar {
+  position: absolute;
+  height: 26px;
+  border-radius: 0 !important;
+  display: flex;
+  align-items: center;
+  padding: 0 8px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: white;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+  z-index: 10;
+}
