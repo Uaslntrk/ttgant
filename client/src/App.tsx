@@ -7,6 +7,9 @@ import {
   updateTask, 
   getNotifications, 
   triggerNotificationCheck,
+  deleteNotification,
+  clearAllNotifications,
+  updateTeamLocation,
   getCompletedTasks,
   clearCompletedTasks
 } from './api';
@@ -274,6 +277,39 @@ export const App: React.FC = () => {
     }
   };
 
+  // Delete single notification
+  const handleDeleteNotification = async (id: string) => {
+    try {
+      await deleteNotification(id);
+      setNotifications(prev => prev.filter(n => n.id !== id));
+      showToast('Bildirim silindi.', 'info');
+    } catch (err: any) {
+      showToast(`Bildirim silinemedi: ${err.message}`, 'warning');
+    }
+  };
+
+  // Clear all notifications
+  const handleClearAllNotifications = async () => {
+    try {
+      await clearAllNotifications();
+      setNotifications([]);
+      showToast('Tüm bildirimler temizlendi.', 'info');
+    } catch (err: any) {
+      showToast(`Bildirimler temizlenemedi: ${err.message}`, 'warning');
+    }
+  };
+
+  // Update team location
+  const handleUpdateTeamLocation = async (teamId: string, lat: number, lng: number) => {
+    try {
+      await updateTeamLocation(teamId, lat, lng);
+      setTeams(prev => prev.map(t => t.TeamId === teamId ? { ...t, Latitude: lat, Longitude: lng } : t));
+      showToast(`Ekip #${teamId} konumu güncellendi (${lat.toFixed(4)}, ${lng.toFixed(4)}).`, 'success');
+    } catch (err: any) {
+      showToast(`Ekip konumu güncellenemedi: ${err.message}`, 'warning');
+    }
+  };
+
   // Clear completed tasks table
   const handleClearCompleted = async () => {
     if (window.confirm('Yapılan işler veritabanı temizlensin mi?')) {
@@ -327,6 +363,8 @@ export const App: React.FC = () => {
         onFindNearest={handleFindNearest}
         notifications={notifications}
         onTriggerCheck={handleTriggerCheck}
+        onDeleteNotification={handleDeleteNotification}
+        onClearNotifications={handleClearAllNotifications}
         onRefreshData={loadData}
         isRefreshing={isRefreshing}
         pendingCount={tasks.length}
@@ -359,6 +397,7 @@ export const App: React.FC = () => {
               onClearRoute={handleClearRoute}
               onEditTask={(task) => setEditingTask(task)}
               onFindNearest={handleFindNearest}
+              onUpdateTeamLocation={handleUpdateTeamLocation}
             />
           </div>
 
@@ -396,6 +435,7 @@ export const App: React.FC = () => {
                   onClearRoute={handleClearRoute}
                   onEditTask={(task) => setEditingTask(task)}
                   onFindNearest={handleFindNearest}
+                  onUpdateTeamLocation={handleUpdateTeamLocation}
                 />
               </div>
               <div>

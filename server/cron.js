@@ -80,8 +80,21 @@ function getNotificationHistory() {
   return notificationHistory;
 }
 
+function removeNotification(id) {
+  const idx = notificationHistory.findIndex(n => n.id === id);
+  if (idx === -1) return false;
+  notificationHistory.splice(idx, 1);
+  return true;
+}
+
+function clearNotifications() {
+  notificationHistory.length = 0;
+}
+
 module.exports = {
   initCron,
   checkNotifications,
-  getNotificationHistory
+  getNotificationHistory,
+  removeNotification,
+  clearNotifications
 };

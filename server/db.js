@@ -124,6 +124,15 @@ function getTeamById(id) {
   return stmt.get(String(id));
 }
 
+function updateTeamLocation(teamId, latitude, longitude) {
+  const db = getDb();
+  const existing = getTeamById(teamId);
+  if (!existing) return null;
+  const stmt = db.prepare('UPDATE Teams SET Latitude = ?, Longitude = ? WHERE TeamId = ?');
+  stmt.run(parseFloat(latitude), parseFloat(longitude), String(teamId));
+  return getTeamById(teamId);
+}
+
 function getAllTasks() {
   const db = getDb();
   const stmt = db.prepare(`
@@ -369,6 +378,7 @@ module.exports = {
   initDb,
   getAllTeams,
   getTeamById,
+  updateTeamLocation,
   getAllTasks,
   getTasksByTeamId,
   getTaskById,

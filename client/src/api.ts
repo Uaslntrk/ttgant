@@ -169,6 +169,35 @@ export async function triggerNotificationCheck(): Promise<any> {
   return res.json();
 }
 
+export async function deleteNotification(id: string): Promise<any> {
+  const res = await fetch(`${API_BASE}/notifications/${encodeURIComponent(id)}`, {
+    method: 'DELETE'
+  });
+  if (!res.ok) throw new Error('Bildirim silinemedi');
+  return res.json();
+}
+
+export async function clearAllNotifications(): Promise<any> {
+  const res = await fetch(`${API_BASE}/notifications`, {
+    method: 'DELETE'
+  });
+  if (!res.ok) throw new Error('Bildirimler temizlenemedi');
+  return res.json();
+}
+
+export async function updateTeamLocation(teamId: string, latitude: number, longitude: number): Promise<any> {
+  const res = await fetch(`${API_BASE}/teams/${encodeURIComponent(teamId)}/location`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ latitude, longitude })
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || 'Ekip konumu güncellenemedi');
+  }
+  return res.json();
+}
+
 /**
  * YAPILAN İŞLER (COMPLETED TASKS) API İŞLEMLERİ
  */

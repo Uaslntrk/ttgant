@@ -11,7 +11,9 @@ import {
   RefreshCw,
   CheckCircle2,
   Clock,
-  GitCompare
+  GitCompare,
+  Trash2,
+  X
 } from 'lucide-react';
 import { Globe } from 'lucide-react';
 import { Team, NotificationItem } from '../types';
@@ -34,6 +36,8 @@ interface NavbarProps {
   pendingCount: number;
   completedCount: number;
   onOpenHattatSync?: () => void;
+  onDeleteNotification?: (id: string) => void;
+  onClearNotifications?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -53,7 +57,9 @@ export const Navbar: React.FC<NavbarProps> = ({
   isRefreshing,
   pendingCount,
   completedCount,
-  onOpenHattatSync
+  onOpenHattatSync,
+  onDeleteNotification,
+  onClearNotifications
 }) => {
   const [showNotifMenu, setShowNotifMenu] = React.useState(false);
   const overdueCount = notifications.filter(n => n.isOverdue).length;
@@ -344,35 +350,75 @@ export const Navbar: React.FC<NavbarProps> = ({
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6, borderBottom: '1px solid #1f293d', paddingBottom: 4 }}>
                   <span style={{ fontWeight: 700, fontSize: '0.78rem', color: '#f8fafc' }}>Uyarı ve Bildirimler</span>
-                  <button
-                    onClick={onTriggerCheck}
-                    style={{ background: 'none', border: 'none', color: '#0284c7', fontSize: '0.7rem', cursor: 'pointer' }}
-                  >
-                    Şimdi Kontrol Et
-                  </button>
+                  <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                    {notifications.length > 0 && onClearNotifications && (
+                      <button
+                        onClick={onClearNotifications}
+                        style={{ background: 'none', border: 'none', color: '#ef4444', fontSize: '0.7rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 2 }}
+                        title="Tüm Bildirimleri Temizle"
+                      >
+                        <Trash2 size={11} /> Temizle
+                      </button>
+                    )}
+                    <button
+                      onClick={onTriggerCheck}
+                      style={{ background: 'none', border: 'none', color: '#0284c7', fontSize: '0.7rem', cursor: 'pointer' }}
+                    >
+                      Şimdi Kontrol Et
+                    </button>
+                  </div>
                 </div>
-
 
                 {notifications.length === 0 ? (
                   <div style={{ fontSize: '0.75rem', color: '#94a3b8', textAlign: 'center', padding: '10px 0' }}>
                     Henüz yaklaşan veya geciken görev bildirimi yok.
                   </div>
                 ) : (
-                  <div style={{ maxHeight: 220, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 4 }}>
+                  <div style={{ maxHeight: 240, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 4 }}>
                     {notifications.map((n) => (
                       <div
                         key={n.id}
                         style={{
                           background: n.isOverdue ? '#281113' : '#281f11',
                           borderLeft: `3px solid ${n.isOverdue ? '#dc2626' : '#d97706'}`,
-                          padding: '4px 6px',
-                          fontSize: '0.72rem'
+                          padding: '5px 8px',
+                          fontSize: '0.72rem',
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'flex-start',
+                          gap: 6
                         }}
                       >
-                        <div style={{ fontWeight: 700, color: n.isOverdue ? '#f87171' : '#fbbf24' }}>
-                          {n.title}
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontWeight: 700, color: n.isOverdue ? '#f87171' : '#fbbf24' }}>
+                            {n.title}
+                          </div>
+                          <div style={{ color: '#cbd5e1', marginTop: 1, lineHeight: 1.3 }}>{n.message}</div>
                         </div>
-                        <div style={{ color: '#cbd5e1', marginTop: 1 }}>{n.message}</div>
+                        {onDeleteNotification && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onDeleteNotification(n.id);
+                            }}
+                            style={{
+                              background: 'transparent',
+                              border: 'none',
+                              color: '#94a3b8',
+                              cursor: 'pointer',
+                              padding: 2,
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              borderRadius: 2
+                            }}
+                            title="Bildirimi Sil"
+                            onMouseEnter={(e) => (e.currentTarget.style.color = '#ef4444')}
+                            onMouseLeave={(e) => (e.currentTarget.style.color = '#94a3b8')}
+                          >
+                            <X size={13} />
+                          </button>
+                        )}
                       </div>
                     ))}
                   </div>

@@ -83,6 +83,26 @@ app.get('/team/:id/tasks', (req, res) => {
 });
 
 /**
+ * PUT /teams/:id/location – Ekip konumunu günceller
+ */
+app.put('/teams/:id/location', (req, res) => {
+  try {
+    const { id } = req.params;
+    const { latitude, longitude } = req.body;
+    if (latitude === undefined || longitude === undefined) {
+      return res.status(400).json({ error: 'latitude ve longitude zorunludur.' });
+    }
+    const updated = db.updateTeamLocation(id, latitude, longitude);
+    if (!updated) {
+      return res.status(404).json({ error: `Ekip #${id} bulunamadı.` });
+    }
+    res.json({ success: true, message: `Ekip #${id} konumu güncellendi.`, team: updated });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+/**
  * GET /nearest/:teamId – Ekip konumundan en yakın görevi (Haversine mesafesi) döner
  */
 app.get('/nearest/:teamId', (req, res) => {
@@ -406,6 +426,31 @@ app.post('/notifications/trigger', (req, res) => {
       triggeredCount: results.length,
       tasks: results
     });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/**
+ * DELETE /notifications/:id – Tek bir bildirimi siler
+ */
+app.delete('/notifications/:id', (req, res) => {
+  try {
+    const { id } = req.params;
+    const removed = cron.removeNotification(id);
+    res.json({ success: removed, message: removed ? 'Bildirim silindi.' : 'Bildirim bulunamadı.' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/**
+ * DELETE /notifications – Tüm bildirimleri siler
+ */
+app.delete('/notifications', (req, res) => {
+  try {
+    cron.clearNotifications();
+    res.json({ success: true, message: 'Tüm bildirimler temizlendi.' });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

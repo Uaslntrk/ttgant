@@ -30,6 +30,7 @@ interface MapViewProps {
   onClearRoute: () => void;
   onEditTask: (task: Task) => void;
   onFindNearest: () => void;
+  onUpdateTeamLocation?: (teamId: string, lat: number, lng: number) => void;
 }
 
 export const MapView: React.FC<MapViewProps> = ({
@@ -41,7 +42,8 @@ export const MapView: React.FC<MapViewProps> = ({
   onDrawRoute,
   onClearRoute,
   onEditTask,
-  onFindNearest
+  onFindNearest,
+  onUpdateTeamLocation
 }) => {
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
@@ -61,8 +63,12 @@ export const MapView: React.FC<MapViewProps> = ({
   // Tasks belonging ONLY to the selected team (Rule: only show team's tasks after team is selected!)
   const teamTasks = useMemo(() => {
     if (!selectedTeamId) return [];
-    return tasks.filter(t => t.TeamId === selectedTeamId);
-  }, [tasks, selectedTeamId]);
+    const teamObj = teams.find(t => String(t.TeamId) === String(selectedTeamId));
+    return tasks.filter(t => 
+      String(t.TeamId) === String(selectedTeamId) || 
+      (teamObj && t.TeamName && t.TeamName.trim().toLowerCase() === teamObj.TeamName.trim().toLowerCase())
+    );
+  }, [tasks, selectedTeamId, teams]);
 
   // Unique task types / categories for the selected team
   const availableTaskTypes = useMemo(() => {
@@ -173,16 +179,10 @@ export const MapView: React.FC<MapViewProps> = ({
     // Fit map to Fatih bounds, limiting max zoom to keep area viewable
     map.fitBounds(fatihBounds, { padding: [40, 40], maxZoom: 14 });
 
-    // Mapbox Streets tiles (requires access token)
-    const MAPBOX_TOKEN = process.env.REACT_APP_MAPBOX_TOKEN;
-    if (!MAPBOX_TOKEN) {
-      console.error('Mapbox token missing – set REACT_APP_MAPBOX_TOKEN in .env');
-    }
-    L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/{z}/{x}/{y}?access_token=' + MAPBOX_TOKEN, {
-      tileSize: 512,
-      zoomOffset: -1,
-      attribution: '&copy; <a href="https://www.mapbox.com/about/maps/">Mapbox</a> &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors',
-      maxZoom: 22
+    // OpenStreetMap tiles (free, no API token required)
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      maxZoom: 19
     }).addTo(map);
 
     L.control.zoom({ position: 'bottomright' }).addTo(map);
@@ -205,8 +205,9 @@ export const MapView: React.FC<MapViewProps> = ({
     markersLayer.clearLayers();
     const bounds = L.latLngBounds([]);
 
-    // 1. Render Team Markers - Flat sharp rectangular badge
-    teams.forEach((team) => {
+    // 1. Render Team Markers - Only show selected team when one is selected, otherwise show all
+    const teamsToShow = selectedTeamId ? teams.filter(t => t.TeamId === selectedTeamId) : teams;
+    teamsToShow.forEach((team) => {
       const isSelected = team.TeamId === selectedTeamId;
       const countForTeam = tasks.filter(t => t.TeamId === team.TeamId).length;
 
@@ -246,12 +247,23 @@ export const MapView: React.FC<MapViewProps> = ({
 
       const marker = L.marker([team.Latitude, team.Longitude], { 
         icon: teamIcon,
-        zIndexOffset: isSelected ? 1000 : 100
+        zIndexOffset: isSelected ? 1000 : 100,
+        draggable: isSelected
       });
 
       marker.on('click', () => {
         onSelectTeam(team.TeamId);
       });
+
+      // Draggable: update team location on drag end
+      if (isSelected) {
+        marker.on('dragend', (e: any) => {
+          const newPos = e.target.getLatLng();
+          if (onUpdateTeamLocation) {
+            onUpdateTeamLocation(team.TeamId, newPos.lat, newPos.lng);
+          }
+        });
+      }
 
       marker.bindPopup(`
         <div style="padding: 2px; min-width: 200px; font-family: 'Inter', sans-serif;">
@@ -264,6 +276,7 @@ export const MapView: React.FC<MapViewProps> = ({
           <div style="font-size: 11px; color: #94a3b8; margin-bottom: 8px; line-height: 1.4;">
             <div><b>Ekip Kodu:</b> #${team.TeamId}</div>
             <div><b>Konum:</b> ${team.Latitude.toFixed(4)}, ${team.Longitude.toFixed(4)}</div>
+            ${isSelected ? '<div style="color: #38bdf8; font-size: 10px; margin-top: 2px;">💡 Konumu değiştirmek için sürükleyip bırakın</div>' : ''}
           </div>
           <div style="display: flex; flex-direction: column; gap: 4px;">
             ${!isSelected ? `
@@ -292,6 +305,21 @@ export const MapView: React.FC<MapViewProps> = ({
             ">
               🧭 En Yakın Göreve Rota Çiz
             </button>
+            ${onUpdateTeamLocation ? `
+              <button id="btn-edit-coords-${team.TeamId}" style="
+                width: 100%;
+                background: #0b1329;
+                color: #38bdf8;
+                border: 1px dashed #0284c7;
+                padding: 4px 8px;
+                font-size: 10px;
+                font-weight: 600;
+                cursor: pointer;
+                margin-top: 2px;
+              ">
+                📍 Konum / Koordinat Düzenle
+              </button>
+            ` : ''}
           </div>
         </div>
       `);
@@ -308,13 +336,26 @@ export const MapView: React.FC<MapViewProps> = ({
             onFindNearest();
           };
         }
+        const editCoordsBtn = document.getElementById(`btn-edit-coords-${team.TeamId}`);
+        if (editCoordsBtn && onUpdateTeamLocation) {
+          editCoordsBtn.onclick = () => {
+            const latStr = window.prompt(`[${team.TeamName}] Yeni Enlem (Latitude):`, String(team.Latitude));
+            if (latStr === null) return;
+            const lngStr = window.prompt(`[${team.TeamName}] Yeni Boylam (Longitude):`, String(team.Longitude));
+            if (lngStr === null) return;
+            const newLat = parseFloat(latStr);
+            const newLng = parseFloat(lngStr);
+            if (!isNaN(newLat) && !isNaN(newLng)) {
+              onUpdateTeamLocation(team.TeamId, newLat, newLng);
+            } else {
+              window.alert('Geçersiz koordinat değeri girdiniz.');
+            }
+          };
+        }
       });
 
       marker.addTo(markersLayer);
-
-      if (!selectedTeamId || isSelected) {
-        bounds.extend([team.Latitude, team.Longitude]);
-      }
+      bounds.extend([team.Latitude, team.Longitude]);
     });
 
     // 2. Render Task Markers ONLY for selected team's filtered tasks - Flat sharp rectangular badge
